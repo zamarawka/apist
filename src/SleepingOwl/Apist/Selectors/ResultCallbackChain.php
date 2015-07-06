@@ -29,7 +29,7 @@ class ResultCallbackChain extends \ArrayObject
      * @param \SleepingOwl\Apist\BlueprintParser $parser
      *
      * @return array|null|string|\Symfony\Component\DomCrawler\Crawler
-     * @throws \SleepingOwl\Apist\Selectors\InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public function call(Crawler $node, BlueprintParser $parser)
     {
@@ -47,7 +47,7 @@ class ResultCallbackChain extends \ArrayObject
                     return null;
                 }
                 $message = $this->createExceptionMessage($e, $traceStack);
-                throw new InvalidArgumentException($message, 0, $e);
+                throw new \InvalidArgumentException($message, 0, $e);
             }
         }
 
@@ -66,5 +66,27 @@ class ResultCallbackChain extends \ArrayObject
         $this->append($resultCallback);
 
         return $this;
+    }
+
+    /**
+     * @param $e
+     * @param ResultCallback[] $traceStack
+     *
+     * @return string
+     */
+    protected function createExceptionMessage(\Exception $e, $traceStack)
+    {
+        $message = '[filter_chain';
+        foreach ($traceStack as $callback) {
+            $message .= '->' . $callback->getMethodName() . '(';
+            try {
+                $message .= implode(', ', $callback->getArguments());
+            } catch (\Exception $_e) {
+            }
+            $message .= ')';
+        }
+        $message .= ' ] ' . $e->getMessage();
+
+        return $message;
     }
 }

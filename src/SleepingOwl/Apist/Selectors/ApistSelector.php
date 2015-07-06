@@ -84,26 +84,4 @@ class ApistSelector
 
         return $this;
     }
-
-    /**
-     * @param $e
-     * @param ResultCallback[] $traceStack
-     *
-     * @return string
-     */
-    protected function createExceptionMessage(\Exception $e, $traceStack)
-    {
-        $message = "[ filter({$this->selector})";
-        foreach ($traceStack as $callback) {
-            $message .= '->' . $callback->getMethodName() . '(';
-            try {
-                $message .= implode(', ', $callback->getArguments());
-            } catch (\Exception $_e) {
-            }
-            $message .= ')';
-        }
-        $message .= ' ] ' . $e->getMessage();
-
-        return $message;
-    }
 }
