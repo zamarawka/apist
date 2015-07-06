@@ -1,14 +1,20 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: yevgen
+ * Date: 06.07.15
+ * Time: 15:53
+ */
+
 namespace SleepingOwl\Apist;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Uri;
 use SleepingOwl\Apist\Methods\ApistMethod;
-use SleepingOwl\Apist\Selectors\ApistSelector;
-use SleepingOwl\Apist\Yaml\YamlApist;
 
-abstract class Apist
+class Apist
 {
+    use SuppressExceptionTrait;
     /**
      * @var Uri
      */
@@ -25,10 +31,6 @@ abstract class Apist
      * @var ApistMethod
      */
     protected $lastMethod;
-    /**
-     * @var bool
-     */
-    protected $suppressExceptions = true;
 
     /**
      * @param \GuzzleHttp\ClientInterface $httpClient
@@ -41,101 +43,32 @@ abstract class Apist
     }
 
     /**
-     * @return ClientInterface
-     */
-    public function getGuzzle()
-    {
-        return $this->guzzle;
-    }
-
-    /**
-     * @param \GuzzleHttp\ClientInterface $guzzle
-     */
-    public function setGuzzle(ClientInterface $guzzle)
-    {
-        $this->guzzle = $guzzle;
-    }
-
-    /**
-     * Create filter object
+     * @param $content
+     * @param $blueprint
      *
-     * @param $cssSelector
+     * @return array|string
+     */
+    /*public function parse($content, $blueprint)
+    {
+        $this->currentMethod = new ApistMethod($this, null, $blueprint);
+        $this->currentMethod->setContent($content);
+        $result = $this->currentMethod->parseBlueprint($blueprint);
+        $this->currentMethod = null;
+
+        return $result;
+    }*/
+
+    /**
+     * @param $url
+     * @param $blueprint
+     * @param array $options
      *
-     * @return \SleepingOwl\Apist\Selectors\ApistSelector
+     * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public static function filter($cssSelector)
+    protected function get($url, $blueprint = null, $options = [])
     {
-        return new ApistSelector($cssSelector);
-    }
-
-    /**
-     * Get current node
-     *
-     * @return \SleepingOwl\Apist\Selectors\ApistSelector
-     */
-    public static function current()
-    {
-        return static::filter('*');
-    }
-
-    /**
-     * Initialize api from yaml configuration file
-     *
-     * @param $file
-     *
-     * @return YamlApist
-     */
-    public static function fromYaml($file)
-    {
-        return new YamlApist($file, []);
-    }
-
-    /**
-     * @return ApistMethod
-     */
-    public function getCurrentMethod()
-    {
-        return $this->currentMethod;
-    }
-
-    /**
-     * @return \GuzzleHttp\Psr7\Uri
-     */
-    public function getBaseUrl()
-    {
-        return $this->baseUrl;
-    }
-
-    /**
-     * @return ApistMethod
-     */
-    public function getLastMethod()
-    {
-        return $this->lastMethod;
-    }
-
-    /**
-     * @param string $baseUrl
-     */
-    public function setBaseUrl($baseUrl)
-    {
-        $this->baseUrl = Uri::fromParts(parse_url($baseUrl));
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isSuppressExceptions()
-    {
-        return $this->suppressExceptions;
-    }
-
-    /**
-     * @param boolean $suppressExceptions
-     */
-    public function setSuppressExceptions($suppressExceptions)
-    {
-        $this->suppressExceptions = $suppressExceptions;
+        return $this->request('GET', $url, $blueprint, $options);
     }
 
     /**
@@ -150,42 +83,13 @@ abstract class Apist
     protected function request($httpMethod, $url, $blueprint, $options = [])
     {
         $url = Uri::resolve($this->getBaseUrl(), $url);
-        $this->currentMethod = new ApistMethod($this, $url, $blueprint);
+        $this->currentMethod = new ApistMethod($this->getGuzzle(), $url, $blueprint);
         $this->lastMethod = $this->currentMethod;
         $this->currentMethod->setMethod($httpMethod);
         $result = $this->currentMethod->get($options);
         $this->currentMethod = null;
 
         return $result;
-    }
-
-    /**
-     * @param $content
-     * @param $blueprint
-     *
-     * @return array|string
-     */
-    protected function parse($content, $blueprint)
-    {
-        $this->currentMethod = new ApistMethod($this, null, $blueprint);
-        $this->currentMethod->setContent($content);
-        $result = $this->currentMethod->parseBlueprint($blueprint);
-        $this->currentMethod = null;
-
-        return $result;
-    }
-
-    /**
-     * @param $url
-     * @param $blueprint
-     * @param array $options
-     *
-     * @return array
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    protected function get($url, $blueprint = null, $options = [])
-    {
-        return $this->request('GET', $url, $blueprint, $options);
     }
 
     /**
@@ -253,4 +157,51 @@ abstract class Apist
         return $this->request('DELETE', $url, $blueprint, $options);
     }
 
+    /**
+     * @return ClientInterface
+     */
+    public function getGuzzle()
+    {
+        return $this->guzzle;
+    }
+
+    /**
+     * @param \GuzzleHttp\ClientInterface $guzzle
+     */
+    public function setGuzzle(ClientInterface $guzzle)
+    {
+        $this->guzzle = $guzzle;
+    }
+
+    /**
+     * @return ApistMethod
+     */
+    public function getCurrentMethod()
+    {
+        return $this->currentMethod;
+    }
+
+    /**
+     * @return ApistMethod
+     */
+    public function getLastMethod()
+    {
+        return $this->lastMethod;
+    }
+
+    /**
+     * @return \GuzzleHttp\Psr7\Uri
+     */
+    public function getBaseUrl()
+    {
+        return $this->baseUrl;
+    }
+
+    /**
+     * @param string $baseUrl
+     */
+    public function setBaseUrl($baseUrl)
+    {
+        $this->baseUrl = Uri::fromParts(parse_url($baseUrl));
+    }
 }

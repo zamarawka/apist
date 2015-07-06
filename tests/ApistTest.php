@@ -1,6 +1,6 @@
 <?php
 
-use SleepingOwl\Apist\Apist;
+use SleepingOwl\Apist\ApistConf;
 
 class ApistTest extends PHPUnit_Framework_TestCase
 {
@@ -21,6 +21,5 @@ class ApistTest extends PHPUnit_Framework_TestCase
 	{
 		$this->assertInstanceOf('\SleepingOwl\Apist\Apist', $this->resource);
 	}
-
 }
  

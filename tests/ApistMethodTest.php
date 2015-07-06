@@ -1,6 +1,6 @@
 <?php
 
-use SleepingOwl\Apist\Apist;
+use SleepingOwl\Apist\ApistConf;
 
 class ApistMethodTest extends PHPUnit_Framework_TestCase
 {

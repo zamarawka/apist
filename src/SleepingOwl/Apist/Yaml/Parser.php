@@ -1,6 +1,6 @@
 <?php namespace SleepingOwl\Apist\Yaml;
 
-use SleepingOwl\Apist\Apist;
+use SleepingOwl\Apist\ApistConf;
 use SleepingOwl\Apist\Selectors\ApistSelector;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
@@ -29,12 +29,12 @@ class Parser
     }
 
     /**
-     * @param Apist $resource
+     * @param ApistConf $resource
      *
      * @throws ParseException
      * @throws \InvalidArgumentException
      */
-    public function load(Apist $resource)
+    public function load(ApistConf $resource)
     {
         $data = Yaml::parse($this->file);
         if (isset($data['baseUrl'])) {
@@ -83,7 +83,7 @@ class Parser
 
             $parts = preg_split('/\s?\|\s?/', $value);
             $selector = array_shift($parts);
-            $value = Apist::filter($selector);
+            $value = ApistConf::filter($selector);
             foreach ($parts as $part) {
                 $this->addCallbackToFilter($value, $part);
             }

@@ -1,6 +1,6 @@
 <?php namespace SleepingOwl\Apist\Selectors;
 
-use SleepingOwl\Apist\Apist;
+use SleepingOwl\Apist\ApistConf;
 use SleepingOwl\Apist\DomCrawler\Crawler;
 use SleepingOwl\Apist\Methods\ApistMethod;
 
@@ -16,7 +16,7 @@ class ApistFilter
 	 */
 	protected $node;
 	/**
-	 * @var Apist
+	 * @var ApistConf
 	 */
 	protected $resource;
 	/**
@@ -28,7 +28,7 @@ class ApistFilter
 	 * @param mixed $node
 	 * @param ApistMethod $method
 	 */
-	function __construct($node, ApistMethod $method)
+	public function __construct($node, ApistMethod $method)
 	{
 		$this->node = $node;
 		$this->method = $method;

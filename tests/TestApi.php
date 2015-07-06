@@ -1,5 +1,6 @@
 <?php
 
+use SleepingOwl\Apist\ApistConf;
 use SleepingOwl\Apist\Apist;
 
 class TestApi extends Apist
@@ -8,12 +9,12 @@ class TestApi extends Apist
 	public function index()
 	{
 		return $this->get('/', [
-			'title'     => Apist::filter('.page_head .title'),
-			'copyright' => Apist::filter('.copyright .about a')->first()->attr('href'),
-			'posts'     => Apist::filter('.posts .post')->each(function ()
+			'title'     => ApistConf::filter('.page_head .title'),
+			'copyright' => ApistConf::filter('.copyright .about a')->first()->attr('href'),
+			'posts'     => ApistConf::filter('.posts .post')->each(function ()
 			{
 				return [
-					'title' => Apist::filter('h1.title a')->text()
+					'title' => ApistConf::filter('h1.title a')->text()
 				];
 			}),
 		]);
@@ -22,13 +23,13 @@ class TestApi extends Apist
 	public function element_not_found()
 	{
 		return $this->get('/', [
-			'title' => Apist::filter('.page_header')
+			'title' => ApistConf::filter('.page_header')
 		]);
 	}
 
 	public function non_array_blueprint()
 	{
-		return $this->get('/', Apist::filter('.page_head .title'));
+		return $this->get('/', ApistConf::filter('.page_head .title'));
 	}
 
 } 

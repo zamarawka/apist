@@ -1,20 +1,21 @@
 <?php
 namespace SleepingOwl\Apist\Methods;
 
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
-use SleepingOwl\Apist\Apist;
+use SleepingOwl\Apist\ApistConf;
 use SleepingOwl\Apist\DomCrawler\Crawler;
 use SleepingOwl\Apist\Selectors\ApistSelector;
 
 class ApistMethod
 {
     /**
-     * @var Apist
+     * @var ApistConf
      */
-    protected $resource;
+    protected $guzzle;
     /**
      * @var Uri
      */
@@ -41,13 +42,13 @@ class ApistMethod
     protected $response;
 
     /**
-     * @param $resource
+     * @param ClientInterface $guzzle
      * @param Uri $url
      * @param $schemaBlueprint
      */
-    public function __construct($resource, Uri $url, $schemaBlueprint)
+    public function __construct(ClientInterface $guzzle, Uri $url, $schemaBlueprint)
     {
-        $this->resource = $resource;
+        $this->guzzle = $guzzle;
         $this->url = $url;
         $this->schemaBlueprint = $schemaBlueprint;
         $this->crawler = new Crawler();
@@ -94,10 +95,9 @@ class ApistMethod
     {
         $defaults = $this->getDefaultOptions();
         $arguments = array_merge($defaults, $arguments);
-        $client = $this->resource->getGuzzle();
 
         $request = new Request($this->getMethod(), $this->url);
-        $response = $client->send($request, $arguments);
+        $response = $this->guzzle->send($request, $arguments);
         $this->setResponse($response);
         $this->setContent((string) $response->getBody());
     }
@@ -212,11 +212,11 @@ class ApistMethod
     }
 
     /**
-     * @return Apist
+     * @return ApistConf
      */
     public function getResource()
     {
-        return $this->resource;
+        return $this->guzzle;
     }
 
     /**
