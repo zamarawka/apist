@@ -11,12 +11,9 @@ class TestApi extends Apist
 		return $this->get('/', [
 			'title'     => ApistConf::filter('.page_head .title'),
 			'copyright' => ApistConf::filter('.copyright .about a')->first()->attr('href'),
-			'posts'     => ApistConf::filter('.posts .post')->each(function ()
-			{
-				return [
-					'title' => ApistConf::filter('h1.title a')->text()
-				];
-			}),
+			'posts'     => ApistConf::filter('.posts .post')->each([
+                'title' => ApistConf::filter('h1.title a')->text()
+            ]),
 		]);
 	}
 

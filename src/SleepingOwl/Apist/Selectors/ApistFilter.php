@@ -27,6 +27,7 @@ class ApistFilter
     public function __construct($node, BlueprintParser $parser)
     {
         $this->node = $node;
+        $this->parser = $parser;
     }
 
     /**
