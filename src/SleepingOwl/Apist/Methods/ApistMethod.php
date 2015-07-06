@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use SleepingOwl\Apist\ApistConf;
+use SleepingOwl\Apist\BlueprintParser;
 use SleepingOwl\Apist\DomCrawler\Crawler;
 use SleepingOwl\Apist\Selectors\ApistSelector;
 
@@ -40,6 +41,10 @@ class ApistMethod
      * @var \GuzzleHttp\Psr7\Response
      */
     protected $response;
+    /**
+     * @var \SleepingOwl\Apist\BlueprintParser
+     */
+    protected $blueprintParser;
 
     /**
      * @param ClientInterface $guzzle
@@ -52,6 +57,7 @@ class ApistMethod
         $this->url = $url;
         $this->schemaBlueprint = $schemaBlueprint;
         $this->crawler = new Crawler();
+        $this->blueprintParser = new BlueprintParser($this);
     }
 
     /**
@@ -61,6 +67,7 @@ class ApistMethod
      *
      * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \InvalidArgumentException
      */
     public function get(array $arguments = [])
     {
@@ -86,6 +93,17 @@ class ApistMethod
     }
 
     /**
+     * @param $blueprint
+     *
+     * @return array|string
+     * @throws \InvalidArgumentException
+     */
+    public function parseBlueprint($blueprint)
+    {
+        return $this->blueprintParser->parse($blueprint);
+    }
+
+    /**
      * Make http request
      *
      * @param array $arguments
@@ -100,44 +118,6 @@ class ApistMethod
         $response = $this->guzzle->send($request, $arguments);
         $this->setResponse($response);
         $this->setContent((string) $response->getBody());
-    }
-
-    /**
-     * @param $blueprint
-     * @param null $node
-     *
-     * @return array|string
-     */
-    public function parseBlueprint($blueprint, $node = null)
-    {
-        if ($blueprint === null) {
-            return $this->content;
-        }
-        if (!is_array($blueprint)) {
-            $blueprint = $this->parseBlueprintValue($blueprint, $node);
-        }
-        else {
-            array_walk_recursive($blueprint, function (&$value) use ($node) {
-                $value = $this->parseBlueprintValue($value, $node);
-            });
-        }
-
-        return $blueprint;
-    }
-
-    /**
-     * @param $value
-     * @param $node
-     *
-     * @return array|string
-     */
-    protected function parseBlueprintValue($value, $node)
-    {
-        if ($value instanceof ApistSelector) {
-            return $value->getValue($this, $node);
-        }
-
-        return $value;
     }
 
     /**
@@ -212,14 +192,6 @@ class ApistMethod
     }
 
     /**
-     * @return ApistConf
-     */
-    public function getResource()
-    {
-        return $this->guzzle;
-    }
-
-    /**
      * @return \GuzzleHttp\Psr7\Response
      */
     public function getResponse()
@@ -233,6 +205,14 @@ class ApistMethod
     public function setResponse($response)
     {
         $this->response = $response;
+    }
+
+    /**
+     * @return BlueprintParser
+     */
+    public function getBlueprintParser()
+    {
+        return $this->blueprintParser;
     }
 
 }

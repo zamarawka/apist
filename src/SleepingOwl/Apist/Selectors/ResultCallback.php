@@ -1,6 +1,7 @@
 <?php namespace SleepingOwl\Apist\Selectors;
 
-use SleepingOwl\Apist\Methods\ApistMethod;
+use SleepingOwl\Apist\ApistConf;
+use SleepingOwl\Apist\BlueprintParser;
 use Symfony\Component\DomCrawler\Crawler;
 
 class ResultCallback
@@ -24,79 +25,76 @@ class ResultCallback
 		$this->arguments = $arguments;
 	}
 
-	/**
-	 * Apply result callback to the $node, provided by $method
-	 *
-	 * @param Crawler $node
-	 * @param ApistMethod $method
-	 * @return array|string
-	 */
-	public function apply($node, ApistMethod $method)
+    /**
+     * Apply result callback to the $node, provided by $method
+     *
+     * @param Crawler $node
+     * @param \SleepingOwl\Apist\BlueprintParser $parser
+     *
+     * @return array|string
+     * @throws \InvalidArgumentException
+     */
+	public function apply(Crawler $node, BlueprintParser $parser)
 	{
-		if (is_array($node))
+		/*if (is_array($node))
 		{
-			return $this->applyToArray($node, $method);
-		}
-		if ($this->methodName === 'else')
-		{
-			if (is_bool($node)) $node = ! $node;
-			$this->methodName = 'then';
-		}
+			return $this->applyToArray($node, $parser);
+		}*/
+        if ($this->methodName === 'else') {
+            if (is_bool($node)) {
+                $node = !$node;
+            }
+            $this->methodName = 'then';
+        }
 
-		$filter = new ApistFilter($node, $method);
-		if (method_exists($filter, $this->methodName))
-		{
-			return call_user_func_array([
-					$filter,
-					$this->methodName
-				], $this->arguments);
-		}
+        $filter = new ApistFilter($node, $parser);
+        if (method_exists($filter, $this->methodName)) {
+            return call_user_func_array([
+                $filter,
+                $this->methodName
+            ], $this->arguments);
+        }
 
-		if ($this->isResourceMethod($method))
-		{
-			return $this->callResourceMethod($method, $node);
-		}
-		if ($this->isNodeMethod($node))
-		{
-			return $this->callNodeMethod($node);
-		}
-		if ($this->isGlobalFunction())
-		{
-			return $this->callGlobalFunction($node);
-		}
-		throw new \InvalidArgumentException("Method '{$this->methodName}' was not found");
+        if ($this->isResourceMethod()) {
+            return $this->callResourceMethod($node);
+        }
+        if ($this->isNodeMethod($node)) {
+            return $this->callNodeMethod($node);
+        }
+        if ($this->isGlobalFunction()) {
+            return $this->callGlobalFunction($node);
+        }
+        throw new \InvalidArgumentException("Method '{$this->methodName}' was not found");
 	}
 
-	protected function applyToArray($array, ApistMethod $method)
+	protected function applyToArray($array, BlueprintParser $parser)
 	{
 		$result = [];
 		foreach ($array as $node)
 		{
-			$result[] = $this->apply($node, $method);
+			$result[] = $this->apply($node, $parser);
 		}
 		return $result;
 	}
 
 	/**
-	 * @param ApistMethod $method
 	 * @return bool
 	 */
-	protected function isResourceMethod(ApistMethod $method)
+	protected function isResourceMethod()
 	{
-		return method_exists($method->getResource(), $this->methodName);
+		return method_exists(ApistConf::class, $this->methodName);
 	}
 
 	/**
-	 * @param ApistMethod $method
 	 * @param $node
 	 * @return mixed
 	 */
-	protected function callResourceMethod(ApistMethod $method, $node)
+	protected function callResourceMethod($node)
 	{
 		$arguments = $this->arguments;
 		array_unshift($arguments, $node);
 		return call_user_func_array([
-			$method->getResource(),
+            ApistConf::class,
 			$this->methodName
 		], $arguments);
 	}

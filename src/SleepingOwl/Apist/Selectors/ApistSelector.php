@@ -23,6 +23,7 @@ class ApistSelector
     public function __construct($selector)
     {
         $this->selector = $selector;
+        $this->resultMethodChain = new ResultCallbackChain();
     }
 
     /**
@@ -32,6 +33,7 @@ class ApistSelector
      * @param Crawler $rootNode
      *
      * @return array|null|string|Crawler
+     * @throws \InvalidArgumentException
      */
     public function getValue(ApistMethod $method, Crawler $rootNode = null)
     {
@@ -67,25 +69,7 @@ class ApistSelector
      */
     protected function applyResultCallbackChain(Crawler $node, ApistMethod $method)
     {
-        if (empty($this->resultMethodChain)) {
-            $this->addCallback('text');
-        }
-        /** @var ResultCallback[] $traceStack */
-        $traceStack = [];
-        foreach ($this->resultMethodChain as $resultCallback) {
-            try {
-                $traceStack[] = $resultCallback;
-                $node = $resultCallback->apply($node, $method);
-            } catch (InvalidArgumentException $e) {
-                if ($this->isSuppressExceptions()) {
-                    return null;
-                }
-                $message = $this->createExceptionMessage($e, $traceStack);
-                throw new InvalidArgumentException($message, 0, $e);
-            }
-        }
-
-        return $node;
+        return $this->resultMethodChain->call($node, $method->getBlueprintParser());
     }
 
     /**
@@ -96,8 +80,7 @@ class ApistSelector
      */
     public function addCallback($name, $arguments = [])
     {
-        $resultCallback = new ResultCallback($name, $arguments);
-        $this->resultMethodChain[] = $resultCallback;
+        $this->resultMethodChain->addCallback($name, $arguments);
 
         return $this;
     }
@@ -123,5 +106,4 @@ class ApistSelector
 
         return $message;
     }
-
 }
