@@ -1,18 +1,23 @@
 <?php namespace SleepingOwl\Apist\Yaml;
 
-class YamlApist extends \SleepingOwl\Apist\Apist
+use SleepingOwl\Apist\Apist;
+use Symfony\Component\Yaml\Exception\ParseException;
+
+class YamlApist extends Apist
 {
 	/**
 	 * @var Parser
 	 */
 	protected $parser;
 
-	/**
-	 * @param array $options
-	 */
-	function __construct($file = null, $options = [])
+    /**
+     * @param null $file
+     * @param array $options
+     * @throws ParseException
+     */
+	public function __construct($file = null, $options = [])
 	{
-		if ( ! is_null($file))
+		if ($file !== null)
 		{
 			$this->loadFromYml($file);
 		}
@@ -22,6 +27,7 @@ class YamlApist extends \SleepingOwl\Apist\Apist
 	/**
 	 * Load method data from yaml file
 	 * @param $file
+     * @throws ParseException
 	 */
 	protected function loadFromYml($file)
 	{
@@ -33,10 +39,11 @@ class YamlApist extends \SleepingOwl\Apist\Apist
 	 * @param $name
 	 * @param $arguments
 	 * @return array
+     * @throws \InvalidArgumentException
 	 */
-	function __call($name, $arguments)
+	public function __call($name, $arguments)
 	{
-		if (is_null($this->parser))
+		if ($this->parser === null)
 		{
 			throw new \InvalidArgumentException("Method '$name' not found.'");
 		}
@@ -44,6 +51,7 @@ class YamlApist extends \SleepingOwl\Apist\Apist
 		$method = $this->parser->insertMethodArguments($method, $arguments);
 		$httpMethod = isset($method['method']) ? strtoupper($method['method']) : 'GET';
 		$options = isset($method['options']) ? $method['options'] : [];
+
 		return $this->request($httpMethod, $method['url'], $method['blueprint'], $options);
 	}
 

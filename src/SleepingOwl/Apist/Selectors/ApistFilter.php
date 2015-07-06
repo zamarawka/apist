@@ -37,6 +37,7 @@ class ApistFilter
 
 	/**
 	 * @return ApistFilter
+     * @throws \InvalidArgumentException
 	 */
 	public function text()
 	{
@@ -46,6 +47,7 @@ class ApistFilter
 
 	/**
 	 * @return ApistFilter
+     * @throws \InvalidArgumentException
 	 */
 	public function html()
 	{
@@ -99,6 +101,7 @@ class ApistFilter
 
 	/**
 	 * @return ApistFilter
+     * @throws \InvalidArgumentException
 	 */
 	public function children()
 	{
@@ -117,6 +120,7 @@ class ApistFilter
 
 	/**
 	 * @return ApistFilter
+     * @throws \InvalidArgumentException
 	 */
 	public function prevAll()
 	{
@@ -144,6 +148,7 @@ class ApistFilter
 
 	/**
 	 * @return ApistFilter
+     * @throws \InvalidArgumentException
 	 */
 	public function nextAll()
 	{
@@ -164,6 +169,7 @@ class ApistFilter
 	 * @param $selector
 	 * @param $direction
 	 * @return Crawler
+     * @throws \InvalidArgumentException
 	 */
 	public function nodeUntil($selector, $direction)
 	{
@@ -173,7 +179,7 @@ class ApistFilter
 		while (1)
 		{
 			$node = $filter->$direction();
-			if (is_null($node))
+			if (null === $node)
 			{
 				break;
 			}
@@ -184,18 +190,23 @@ class ApistFilter
 		return $crawler;
 	}
 
-	/**
-	 * @return ApistFilter
-	 */
+    /**
+     * @param $selector
+     *
+     * @return \SleepingOwl\Apist\Selectors\ApistFilter
+     */
 	public function is($selector)
 	{
 		$this->guardCrawler();
 		return count($this->filterNodes($selector)) > 0;
 	}
 
-	/**
-	 * @return ApistFilter
-	 */
+    /**
+     * @param $selector
+     *
+     * @return \SleepingOwl\Apist\Selectors\ApistFilter
+     * @throws \InvalidArgumentException
+     */
 	public function closest($selector)
 	{
 		$this->guardCrawler();
@@ -206,6 +217,7 @@ class ApistFilter
 	/**
 	 * @param $attribute
 	 * @return ApistFilter
+     * @throws \InvalidArgumentException
 	 */
 	public function attr($attribute)
 	{
@@ -216,11 +228,12 @@ class ApistFilter
 	/**
 	 * @param $attribute
 	 * @return ApistFilter
+     * @throws \InvalidArgumentException
 	 */
 	public function hasAttr($attribute)
 	{
 		$this->guardCrawler();
-		return ! is_null($this->node->attr($attribute));
+		return $this->node->attr($attribute) !== null;
 	}
 
 	/**
@@ -268,36 +281,46 @@ class ApistFilter
 		return $callback($this->node);
 	}
 
-	/**
-	 * @return ApistFilter
-	 */
+    /**
+     * @param string $mask
+     *
+     * @return \SleepingOwl\Apist\Selectors\ApistFilter
+     */
 	public function trim($mask = " \t\n\r\0\x0B")
 	{
 		$this->guardText();
 		return trim($this->node, $mask);
 	}
 
-	/**
-	 * @return ApistFilter
-	 */
+    /**
+     * @param string $mask
+     *
+     * @return \SleepingOwl\Apist\Selectors\ApistFilter
+     */
 	public function ltrim($mask = " \t\n\r\0\x0B")
 	{
 		$this->guardText();
 		return ltrim($this->node, $mask);
 	}
 
-	/**
-	 * @return ApistFilter
-	 */
+    /**
+     * @param string $mask
+     *
+     * @return \SleepingOwl\Apist\Selectors\ApistFilter
+     */
 	public function rtrim($mask = " \t\n\r\0\x0B")
 	{
 		$this->guardText();
 		return rtrim($this->node, $mask);
 	}
-	
-	/**
-	 * @return ApistFilter
-	 */
+
+    /**
+     * @param $search
+     * @param $replace
+     * @param null $count
+     *
+     * @return \SleepingOwl\Apist\Selectors\ApistFilter
+     */
 	public function str_replace($search, $replace, $count = null)
 	{
 		$this->guardText();
@@ -310,7 +333,7 @@ class ApistFilter
 	public function intval()
 	{
 		$this->guardText();
-		return intval($this->node);
+		return (int)$this->node;
 	}
 
 	/**
@@ -319,7 +342,7 @@ class ApistFilter
 	public function floatval()
 	{
 		$this->guardText();
-		return floatval($this->node);
+		return (float)$this->node;
 	}
 
 	/**
@@ -359,7 +382,7 @@ class ApistFilter
 	public function each($blueprint = null)
 	{
 		$callback = $blueprint;
-		if (is_null($callback))
+		if ($callback === null)
 		{
 			$callback = function ($node)
 			{

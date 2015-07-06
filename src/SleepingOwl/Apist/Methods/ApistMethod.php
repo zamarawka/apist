@@ -1,8 +1,8 @@
 <?php namespace SleepingOwl\Apist\Methods;
 
-use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Psr7\Request;
 use SleepingOwl\Apist\Apist;
 use SleepingOwl\Apist\DomCrawler\Crawler;
 use SleepingOwl\Apist\Selectors\ApistSelector;
@@ -34,7 +34,7 @@ class ApistMethod
 	 */
 	protected $crawler;
 	/**
-	 * @var \GuzzleHttp\Message\Response
+	 * @var \GuzzleHttp\Psr7\Response
 	 */
 	protected $response;
 
@@ -43,7 +43,7 @@ class ApistMethod
 	 * @param $url
 	 * @param $schemaBlueprint
 	 */
-	function __construct($resource, $url, $schemaBlueprint)
+	public function __construct($resource, $url, $schemaBlueprint)
 	{
 		$this->resource = $resource;
 		$this->url = $url;
@@ -72,7 +72,7 @@ class ApistMethod
 			$status = $e->getCode();
 			$response = $e->getResponse();
 			$reason = $e->getMessage();
-			if ( ! is_null($response))
+			if ($response !== null)
 			{
 				$reason = $response->getReasonPhrase();
 			}
@@ -92,8 +92,10 @@ class ApistMethod
 		$defaults = $this->getDefaultOptions();
 		$arguments = array_merge($defaults, $arguments);
 		$client = $this->resource->getGuzzle();
-		$request = $client->createRequest($this->getMethod(), $this->url, $arguments);
-		$response = $client->send($request);
+
+        $request = new Request($this->getMethod(), $this->url, []);
+
+        $response = $client->send($request);
 		$this->setResponse($response);
 		$this->setContent((string)$response->getBody());
 	}
@@ -105,7 +107,7 @@ class ApistMethod
 	 */
 	public function parseBlueprint($blueprint, $node = null)
 	{
-		if (is_null($blueprint))
+		if ($blueprint === null)
 		{
 			return $this->content;
 		}
@@ -211,7 +213,7 @@ class ApistMethod
 	}
 
 	/**
-	 * @return \GuzzleHttp\Message\Response
+	 * @return \GuzzleHttp\Psr7\Response
 	 */
 	public function getResponse()
 	{
@@ -219,7 +221,7 @@ class ApistMethod
 	}
 
 	/**
-	 * @param \GuzzleHttp\Message\Response $response
+	 * @param \GuzzleHttp\Psr7\Response $response
 	 */
 	public function setResponse($response)
 	{

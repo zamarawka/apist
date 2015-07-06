@@ -18,11 +18,7 @@ class ApistMethodTest extends PHPUnit_Framework_TestCase
 		$response->shouldReceive('getBody')->andReturn(file_get_contents(__DIR__ . '/stub/index.html'));
 
 		$client = Mockery::mock();
-		$client->shouldReceive('createRequest')->andReturnUsing(function ($method, $url)
-		{
-			return $url;
-		});
-		$client->shouldReceive('send')->andReturn($response);
+   		$client->shouldReceive('send')->andReturn($response);
 
 		$this->resource->setGuzzle($client);
 	}

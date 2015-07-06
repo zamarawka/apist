@@ -18,7 +18,7 @@ class ResultCallback
 	 * @param $methodName
 	 * @param $arguments
 	 */
-	function __construct($methodName, $arguments)
+	public function __construct($methodName, $arguments)
 	{
 		$this->methodName = $methodName;
 		$this->arguments = $arguments;

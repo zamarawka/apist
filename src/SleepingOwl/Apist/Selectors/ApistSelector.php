@@ -32,7 +32,7 @@ class ApistSelector
 	 */
 	public function getValue(ApistMethod $method, Crawler $rootNode = null)
 	{
-		if (is_null($rootNode))
+		if ($rootNode === null)
 		{
 			$rootNode = $method->getCrawler();
 		}
