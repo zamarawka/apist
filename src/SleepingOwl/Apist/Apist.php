@@ -35,7 +35,8 @@ abstract class Apist
 	 */
 	function __construct($options = [])
 	{
-		$options['base_url'] = $this->getBaseUrl();
+		$baseUrlKey = class_exists('GuzzleHttp\Url') ? 'base_url' : 'base_uri';
+		$options[$baseUrlKey] = $this->getBaseUrl();
 		$this->guzzle = new Client($options);
 	}
 
