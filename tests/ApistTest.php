@@ -12,7 +12,8 @@ class ApistTest extends PHPUnit_Framework_TestCase
 	protected function setUp()
 	{
 		parent::setUp();
-		$this->resource = new TestApi;
+        $client = Mockery::mock('GuzzleHttp\ClientInterface');
+		$this->resource = new TestApi($client, '');
 	}
 
 	/** @test */

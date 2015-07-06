@@ -1,19 +1,20 @@
-<?php namespace SleepingOwl\Apist;
+<?php
+namespace SleepingOwl\Apist;
 
-use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Psr7\Uri;
 use SleepingOwl\Apist\Methods\ApistMethod;
-use SleepingOwl\Apist\Selectors\ApistFilter;
 use SleepingOwl\Apist\Selectors\ApistSelector;
 use SleepingOwl\Apist\Yaml\YamlApist;
 
 abstract class Apist
 {
     /**
-     * @var string
+     * @var Uri
      */
     protected $baseUrl;
     /**
-     * @var Client
+     * @var ClientInterface
      */
     protected $guzzle;
     /**
@@ -30,16 +31,17 @@ abstract class Apist
     protected $suppressExceptions = true;
 
     /**
-     * @param array $options
+     * @param \GuzzleHttp\ClientInterface $httpClient
+     * @param string $baseUrl
      */
-    public function __construct(array $options = [])
+    public function __construct(ClientInterface $httpClient, $baseUrl)
     {
-        $options['base_uri'] = $this->getBaseUrl();
-        $this->guzzle = new Client($options);
+        $this->guzzle = $httpClient;
+        $this->baseUrl = Uri::fromParts(parse_url($baseUrl));
     }
 
     /**
-     * @return Client
+     * @return ClientInterface
      */
     public function getGuzzle()
     {
@@ -47,9 +49,9 @@ abstract class Apist
     }
 
     /**
-     * @param Client $guzzle
+     * @param \GuzzleHttp\ClientInterface $guzzle
      */
-    public function setGuzzle($guzzle)
+    public function setGuzzle(ClientInterface $guzzle)
     {
         $this->guzzle = $guzzle;
     }
@@ -59,7 +61,7 @@ abstract class Apist
      *
      * @param $cssSelector
      *
-     * @return ApistFilter
+     * @return \SleepingOwl\Apist\Selectors\ApistSelector
      */
     public static function filter($cssSelector)
     {
@@ -69,7 +71,7 @@ abstract class Apist
     /**
      * Get current node
      *
-     * @return ApistFilter
+     * @return \SleepingOwl\Apist\Selectors\ApistSelector
      */
     public static function current()
     {
@@ -97,7 +99,7 @@ abstract class Apist
     }
 
     /**
-     * @return string
+     * @return \GuzzleHttp\Psr7\Uri
      */
     public function getBaseUrl()
     {
@@ -117,7 +119,7 @@ abstract class Apist
      */
     public function setBaseUrl($baseUrl)
     {
-        $this->baseUrl = $baseUrl;
+        $this->baseUrl = Uri::fromParts(parse_url($baseUrl));
     }
 
     /**
@@ -143,9 +145,11 @@ abstract class Apist
      * @param array $options
      *
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function request($httpMethod, $url, $blueprint, $options = [])
     {
+        $url = Uri::resolve($this->getBaseUrl(), $url);
         $this->currentMethod = new ApistMethod($this, $url, $blueprint);
         $this->lastMethod = $this->currentMethod;
         $this->currentMethod->setMethod($httpMethod);
@@ -177,6 +181,7 @@ abstract class Apist
      * @param array $options
      *
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function get($url, $blueprint = null, $options = [])
     {
@@ -189,6 +194,7 @@ abstract class Apist
      * @param array $options
      *
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function head($url, $blueprint = null, $options = [])
     {
@@ -201,6 +207,7 @@ abstract class Apist
      * @param array $options
      *
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function post($url, $blueprint = null, $options = [])
     {
@@ -213,6 +220,7 @@ abstract class Apist
      * @param array $options
      *
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function put($url, $blueprint = null, $options = [])
     {
@@ -225,6 +233,7 @@ abstract class Apist
      * @param array $options
      *
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function patch($url, $blueprint = null, $options = [])
     {
@@ -237,6 +246,7 @@ abstract class Apist
      * @param array $options
      *
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function delete($url, $blueprint = null, $options = [])
     {

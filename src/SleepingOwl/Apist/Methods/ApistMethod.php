@@ -1,231 +1,238 @@
-<?php namespace SleepingOwl\Apist\Methods;
+<?php
+namespace SleepingOwl\Apist\Methods;
 
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Uri;
 use SleepingOwl\Apist\Apist;
 use SleepingOwl\Apist\DomCrawler\Crawler;
 use SleepingOwl\Apist\Selectors\ApistSelector;
 
 class ApistMethod
 {
-	/**
-	 * @var Apist
-	 */
-	protected $resource;
-	/**
-	 * @var string
-	 */
-	protected $url;
-	/**
-	 * @var ApistSelector[]|ApistSelector
-	 */
-	protected $schemaBlueprint;
-	/**
-	 * @var string
-	 */
-	protected $method = 'GET';
-	/**
-	 * @var string
-	 */
-	protected $content;
-	/**
-	 * @var Crawler
-	 */
-	protected $crawler;
-	/**
-	 * @var \GuzzleHttp\Psr7\Response
-	 */
-	protected $response;
+    /**
+     * @var Apist
+     */
+    protected $resource;
+    /**
+     * @var Uri
+     */
+    protected $url;
+    /**
+     * @var ApistSelector[]|ApistSelector
+     */
+    protected $schemaBlueprint;
+    /**
+     * @var string
+     */
+    protected $method = 'GET';
+    /**
+     * @var string
+     */
+    protected $content;
+    /**
+     * @var Crawler
+     */
+    protected $crawler;
+    /**
+     * @var \GuzzleHttp\Psr7\Response
+     */
+    protected $response;
 
-	/**
-	 * @param $resource
-	 * @param $url
-	 * @param $schemaBlueprint
-	 */
-	public function __construct($resource, $url, $schemaBlueprint)
-	{
-		$this->resource = $resource;
-		$this->url = $url;
-		$this->schemaBlueprint = $schemaBlueprint;
-		$this->crawler = new Crawler();
-	}
+    /**
+     * @param $resource
+     * @param Uri $url
+     * @param $schemaBlueprint
+     */
+    public function __construct($resource, Uri $url, $schemaBlueprint)
+    {
+        $this->resource = $resource;
+        $this->url = $url;
+        $this->schemaBlueprint = $schemaBlueprint;
+        $this->crawler = new Crawler();
+    }
 
-	/**
-	 * Perform method action
-	 *
-	 * @param array $arguments
-	 * @return array
-	 */
-	public function get($arguments = [])
-	{
-		try
-		{
-			$this->makeRequest($arguments);
-		} catch (ConnectException $e)
-		{
-			$url = $e->getRequest()->getUrl();
-			return $this->errorResponse($e->getCode(), $e->getMessage(), $url);
-		} catch (RequestException $e)
-		{
-			$url = $e->getRequest()->getUrl();
-			$status = $e->getCode();
-			$response = $e->getResponse();
-			$reason = $e->getMessage();
-			if ($response !== null)
-			{
-				$reason = $response->getReasonPhrase();
-			}
-			return $this->errorResponse($status, $reason, $url);
-		}
+    /**
+     * Perform method action
+     *
+     * @param array $arguments
+     *
+     * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function get(array $arguments = [])
+    {
+        try {
+            $this->makeRequest($arguments);
+        } catch (ConnectException $e) {
+            $url = $e->getRequest()->getUri();
 
-		return $this->parseBlueprint($this->schemaBlueprint);
-	}
+            return $this->errorResponse($e->getCode(), $e->getMessage(), $url);
+        } catch (RequestException $e) {
+            $url = $e->getRequest()->getUri();
+            $status = $e->getCode();
+            $response = $e->getResponse();
+            $reason = $e->getMessage();
+            if ($response !== null) {
+                $reason = $response->getReasonPhrase();
+            }
 
-	/**
-	 * Make http request
-	 *
-	 * @param array $arguments
-	 */
-	protected function makeRequest($arguments = [])
-	{
-		$defaults = $this->getDefaultOptions();
-		$arguments = array_merge($defaults, $arguments);
-		$client = $this->resource->getGuzzle();
+            return $this->errorResponse($status, $reason, $url);
+        }
 
-        $request = new Request($this->getMethod(), $this->url, []);
+        return $this->parseBlueprint($this->schemaBlueprint);
+    }
 
-        $response = $client->send($request);
-		$this->setResponse($response);
-		$this->setContent((string)$response->getBody());
-	}
+    /**
+     * Make http request
+     *
+     * @param array $arguments
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    protected function makeRequest(array $arguments = [])
+    {
+        $defaults = $this->getDefaultOptions();
+        $arguments = array_merge($defaults, $arguments);
+        $client = $this->resource->getGuzzle();
 
-	/**
-	 * @param $blueprint
-	 * @param null $node
-	 * @return array|string
-	 */
-	public function parseBlueprint($blueprint, $node = null)
-	{
-		if ($blueprint === null)
-		{
-			return $this->content;
-		}
-		if ( ! is_array($blueprint))
-		{
-			$blueprint = $this->parseBlueprintValue($blueprint, $node);
-		} else
-		{
-			array_walk_recursive($blueprint, function (&$value) use ($node)
-			{
-				$value = $this->parseBlueprintValue($value, $node);
-			});
-		}
-		return $blueprint;
-	}
+        $request = new Request($this->getMethod(), $this->url);
+        $response = $client->send($request, $arguments);
+        $this->setResponse($response);
+        $this->setContent((string) $response->getBody());
+    }
 
-	/**
-	 * @param $value
-	 * @param $node
-	 * @return array|string
-	 */
-	protected function parseBlueprintValue($value, $node)
-	{
-		if ($value instanceof ApistSelector)
-		{
-			return $value->getValue($this, $node);
-		}
-		return $value;
-	}
+    /**
+     * @param $blueprint
+     * @param null $node
+     *
+     * @return array|string
+     */
+    public function parseBlueprint($blueprint, $node = null)
+    {
+        if ($blueprint === null) {
+            return $this->content;
+        }
+        if (!is_array($blueprint)) {
+            $blueprint = $this->parseBlueprintValue($blueprint, $node);
+        }
+        else {
+            array_walk_recursive($blueprint, function (&$value) use ($node) {
+                $value = $this->parseBlueprintValue($value, $node);
+            });
+        }
 
-	/**
-	 * Response with error
-	 *
-	 * @param $status
-	 * @param $reason
-	 * @param $url
-	 * @return array
-	 */
-	protected function errorResponse($status, $reason, $url)
-	{
-		return [
-			'url'   => $url,
-			'error' => [
-				'status' => $status,
-				'reason' => $reason,
-			]
-		];
-	}
+        return $blueprint;
+    }
 
-	/**
-	 * @return Crawler
-	 */
-	public function getCrawler()
-	{
-		return $this->crawler;
-	}
+    /**
+     * @param $value
+     * @param $node
+     *
+     * @return array|string
+     */
+    protected function parseBlueprintValue($value, $node)
+    {
+        if ($value instanceof ApistSelector) {
+            return $value->getValue($this, $node);
+        }
 
-	/**
-	 * @return string
-	 */
-	public function getMethod()
-	{
-		return $this->method;
-	}
+        return $value;
+    }
 
-	/**
-	 * @param string $method
-	 * @return $this
-	 */
-	public function setMethod($method)
-	{
-		$this->method = $method;
-		return $this;
-	}
+    /**
+     * Response with error
+     *
+     * @param $status
+     * @param $reason
+     * @param $url
+     *
+     * @return array
+     */
+    protected function errorResponse($status, $reason, $url)
+    {
+        return [
+            'url'   => $url,
+            'error' => [
+                'status' => $status,
+                'reason' => $reason,
+            ]
+        ];
+    }
 
-	/**
-	 * @param string $content
-	 * @return $this
-	 */
-	public function setContent($content)
-	{
-		$this->content = $content;
-		$this->crawler->addContent($content);
-		return $this;
-	}
+    /**
+     * @return Crawler
+     */
+    public function getCrawler()
+    {
+        return $this->crawler;
+    }
 
-	/**
-	 * @return array
-	 */
-	protected function getDefaultOptions()
-	{
-		return [
-			'cookies' => true
-		];
-	}
+    /**
+     * @return string
+     */
+    public function getMethod()
+    {
+        return $this->method;
+    }
 
-	/**
-	 * @return Apist
-	 */
-	public function getResource()
-	{
-		return $this->resource;
-	}
+    /**
+     * @param string $method
+     *
+     * @return $this
+     */
+    public function setMethod($method)
+    {
+        $this->method = $method;
 
-	/**
-	 * @return \GuzzleHttp\Psr7\Response
-	 */
-	public function getResponse()
-	{
-		return $this->response;
-	}
+        return $this;
+    }
 
-	/**
-	 * @param \GuzzleHttp\Psr7\Response $response
-	 */
-	public function setResponse($response)
-	{
-		$this->response = $response;
-	}
+    /**
+     * @param string $content
+     *
+     * @return $this
+     */
+    public function setContent($content)
+    {
+        $this->content = $content;
+        $this->crawler->addContent($content);
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getDefaultOptions()
+    {
+        return [
+            'cookies' => true
+        ];
+    }
+
+    /**
+     * @return Apist
+     */
+    public function getResource()
+    {
+        return $this->resource;
+    }
+
+    /**
+     * @return \GuzzleHttp\Psr7\Response
+     */
+    public function getResponse()
+    {
+        return $this->response;
+    }
+
+    /**
+     * @param \GuzzleHttp\Psr7\Response $response
+     */
+    public function setResponse($response)
+    {
+        $this->response = $response;
+    }
 
 }

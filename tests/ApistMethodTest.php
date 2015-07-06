@@ -12,15 +12,14 @@ class ApistMethodTest extends PHPUnit_Framework_TestCase
 	protected function setUp()
 	{
 		parent::setUp();
-		$this->resource = new TestApi;
 
 		$response = Mockery::mock();
 		$response->shouldReceive('getBody')->andReturn(file_get_contents(__DIR__ . '/stub/index.html'));
 
-		$client = Mockery::mock();
-   		$client->shouldReceive('send')->andReturn($response);
+        $client = Mockery::mock('GuzzleHttp\ClientInterface');
+        $client->shouldReceive('send')->andReturn($response);
 
-		$this->resource->setGuzzle($client);
+        $this->resource = new TestApi($client, 'http://httpbin.org');
 	}
 
 	/** @test */
