@@ -1,5 +1,6 @@
 <?php namespace SleepingOwl\Apist\Yaml;
 
+use SleepingOwl\Apist\Apist;
 use SleepingOwl\Apist\ApistConf;
 use SleepingOwl\Apist\Selectors\ApistSelector;
 use Symfony\Component\Yaml\Exception\ParseException;
@@ -29,12 +30,12 @@ class Parser
     }
 
     /**
-     * @param ApistConf $resource
+     * @param Apist $resource
      *
      * @throws ParseException
      * @throws \InvalidArgumentException
      */
-    public function load(ApistConf $resource)
+    public function load(Apist $resource)
     {
         $data = Yaml::parse($this->file);
         if (isset($data['baseUrl'])) {

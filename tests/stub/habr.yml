@@ -1,0 +1,10 @@
+_post:
+    title: h1.title a | text
+
+posts_page:
+    url: /
+    method: get
+    blueprint:
+        title: .page_head .title | text
+        copyright: .copyright .about a:first | attr('href')
+        posts: .posts .post | each(:post)
