@@ -30,7 +30,6 @@ class ParsingChain
      * Get value from content by css selector
      *
      * @param Crawler $rootNode
-     *
      * @param \SleepingOwl\Apist\Blueprint $parser
      *
      * @return array|null|string|\Symfony\Component\DomCrawler\Crawler

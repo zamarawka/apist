@@ -20,12 +20,13 @@ class ResultCallbackChain extends \ArrayObject
      */
     public function __construct()
     {
-        parent::__construct([], $flags = 0, $iterator_class = "ArrayIterator");
+        parent::__construct([], $flags = 0, $iterator_class = 'ArrayIterator');
     }
 
     /**
-     * @param \Symfony\Component\DomCrawler\Crawler $node
+     * Sequentially calls the callbacks from the callback chain.
      *
+     * @param \Symfony\Component\DomCrawler\Crawler $node
      * @param \SleepingOwl\Apist\Blueprint $parser
      *
      * @return array|null|string|\Symfony\Component\DomCrawler\Crawler

@@ -8,6 +8,10 @@
         {
             "name": "Sleeping Owl",
             "email": "owl.sleeping@yahoo.com"
+        },
+        {
+            "name": "Yevgen Grytsay",
+            "email": "yevgen_grytsay@mail.ru"
         }
     ],
     "require": {
@@ -19,7 +23,9 @@
     },
 	"require-dev": {
 		"phpunit/phpunit": "4.*",
-		"mockery/mockery": "0.*"
+		"mockery/mockery": "0.*",
+        "pdepend/pdepend" : "~2.1",
+        "halleck45/phpmetrics": "~1.1"
 	},
     "autoload": {
         "classmap": ["tests/"],

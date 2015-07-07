@@ -3,6 +3,12 @@
 use SleepingOwl\Apist\Blueprint;
 use Symfony\Component\DomCrawler\Crawler;
 
+/**
+ * Represents single step in the parsing chain.
+ *
+ * Class ResultCallback
+ * @package SleepingOwl\Apist\Selectors
+ */
 class ResultCallback
 {
     /**

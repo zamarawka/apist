@@ -71,7 +71,12 @@ class ApistFilter
      * @return ApistFilter
      * @throws \InvalidArgumentException
      */
+    //TODO: implement
     public function filterNodes($selector)
+    {
+        throw new \Exception('Method '.__METHOD__.' is not yet implemented');
+    }
+    /*public function filterNodes($selector)
     {
         $this->guardCrawler();
         $rootNode = $this->method->getCrawler();
@@ -88,7 +93,7 @@ class ApistFilter
                  });
 
         return $crawler;
-    }
+    }*/
 
     /**
      * @param $selector
@@ -215,10 +220,15 @@ class ApistFilter
      */
     public function is($selector)
     {
+        throw new \Exception('Method '.__METHOD__.' is not yet implemented');
+    }
+    //TODO: implement
+    /*public function is($selector)
+    {
         $this->guardCrawler();
 
         return count($this->filterNodes($selector)) > 0;
-    }
+    }*/
 
     /**
      * @param $selector
@@ -226,13 +236,18 @@ class ApistFilter
      * @return \SleepingOwl\Apist\Selectors\ApistFilter
      * @throws \InvalidArgumentException
      */
+    //TODO: implement
     public function closest($selector)
+    {
+        throw new \Exception('Method '.__METHOD__.' is not yet implemented');
+    }
+    /*public function closest($selector)
     {
         $this->guardCrawler();
         $this->node = $this->node->parents();
 
         return $this->filterNodes($selector)->last();
-    }
+    }*/
 
     /**
      * @param $attribute
