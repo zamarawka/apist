@@ -1,7 +1,7 @@
 <?php namespace SleepingOwl\Apist\Selectors;
 
 use InvalidArgumentException;
-use SleepingOwl\Apist\Methods\ApistMethod;
+use SleepingOwl\Apist\BlueprintParser;
 use SleepingOwl\Apist\SuppressExceptionTrait;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -29,20 +29,19 @@ class ApistSelector
     /**
      * Get value from content by css selector
      *
-     * @param ApistMethod $method
      * @param Crawler $rootNode
      *
-     * @return array|null|string|Crawler
+     * @param \SleepingOwl\Apist\BlueprintParser $parser
+     *
+     * @return array|null|string|\Symfony\Component\DomCrawler\Crawler
      * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      */
-    public function getValue(ApistMethod $method, Crawler $rootNode = null)
+    public function getValue(Crawler $rootNode, BlueprintParser $parser)
     {
-        if ($rootNode === null) {
-            $rootNode = $method->getCrawler();
-        }
         $result = $rootNode->filter($this->selector);
 
-        return $this->applyResultCallbackChain($result, $method);
+        return $this->applyResultCallbackChain($result, $parser);
     }
 
     /**
@@ -62,14 +61,14 @@ class ApistSelector
      * Apply all result callbacks
      *
      * @param Crawler $node
-     * @param ApistMethod $method
+     * @param \SleepingOwl\Apist\BlueprintParser $parser
      *
-     * @return array|string|Crawler
-     * @throws InvalidArgumentException
+     * @return array|string|\Symfony\Component\DomCrawler\Crawler
+     * @throws \InvalidArgumentException
      */
-    protected function applyResultCallbackChain(Crawler $node, ApistMethod $method)
+    protected function applyResultCallbackChain(Crawler $node, BlueprintParser $parser)
     {
-        return $this->resultMethodChain->call($node, $method->getBlueprintParser());
+        return $this->resultMethodChain->call($node, $parser);
     }
 
     /**

@@ -59,11 +59,14 @@ class BlueprintParser
      *
      * @return array|string
      * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      */
     protected function parseBlueprintValue($value, $node)
     {
         if ($value instanceof ApistSelector) {
-            return $value->getValue($this->method, $node);
+            $node = ($node === null) ? $this->method->getCrawler() : $node;
+
+            return $value->getValue($node, $this);
         }
 
         return $value;
