@@ -6,24 +6,24 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class ResultCallback
 {
-	/**
-	 * @var string
-	 */
-	protected $methodName;
-	/**
-	 * @var array
-	 */
-	protected $arguments;
+    /**
+     * @var string
+     */
+    protected $methodName;
+    /**
+     * @var array
+     */
+    protected $arguments;
 
-	/**
-	 * @param $methodName
-	 * @param $arguments
-	 */
-	public function __construct($methodName, $arguments)
-	{
-		$this->methodName = $methodName;
-		$this->arguments = $arguments;
-	}
+    /**
+     * @param $methodName
+     * @param $arguments
+     */
+    public function __construct($methodName, $arguments)
+    {
+        $this->methodName = $methodName;
+        $this->arguments = $arguments;
+    }
 
     /**
      * Apply result callback to the $node, provided by $method
@@ -34,12 +34,11 @@ class ResultCallback
      * @return array|string
      * @throws \InvalidArgumentException
      */
-	public function apply(Crawler $node, BlueprintParser $parser)
-	{
-		/*if (is_array($node))
-		{
-			return $this->applyToArray($node, $parser);
-		}*/
+    public function apply(Crawler $node, BlueprintParser $parser)
+    {
+        /*if ($node->count() > 1) {
+            return $this->applyToArray($node, $parser);
+        }*/
         if ($this->methodName === 'else') {
             if (is_bool($node)) {
                 $node = !$node;
@@ -65,98 +64,108 @@ class ResultCallback
             return $this->callGlobalFunction($node);
         }
         throw new \InvalidArgumentException("Method '{$this->methodName}' was not found");
-	}
+    }
 
-	protected function applyToArray($array, BlueprintParser $parser)
-	{
-		$result = [];
-		foreach ($array as $node)
-		{
-			$result[] = $this->apply($node, $parser);
-		}
-		return $result;
-	}
+    /**
+     * @param $array
+     * @param \SleepingOwl\Apist\BlueprintParser $parser
+     *
+     * @return array
+     */
+    /*protected function applyToArray($array, BlueprintParser $parser)
+    {
+        $result = [];
+        foreach ($array as $node) {
+            $result[] = $this->apply($node, $parser);
+        }
 
-	/**
-	 * @return bool
-	 */
-	protected function isResourceMethod()
-	{
-		return method_exists(ApistConf::class, $this->methodName);
-	}
+        return $result;
+    }*/
 
-	/**
-	 * @param $node
-	 * @return mixed
-	 */
-	protected function callResourceMethod($node)
-	{
-		$arguments = $this->arguments;
-		array_unshift($arguments, $node);
-		return call_user_func_array([
+    /**
+     * @return bool
+     */
+    protected function isResourceMethod()
+    {
+        return method_exists(ApistConf::class, $this->methodName);
+    }
+
+    /**
+     * @param $node
+     *
+     * @return mixed
+     */
+    protected function callResourceMethod($node)
+    {
+        $arguments = $this->arguments;
+        array_unshift($arguments, $node);
+
+        return call_user_func_array([
             ApistConf::class,
-			$this->methodName
-		], $arguments);
-	}
+            $this->methodName
+        ], $arguments);
+    }
 
-	/**
-	 * @param $node
-	 * @return bool
-	 */
-	protected function isNodeMethod($node)
-	{
-		return method_exists($node, $this->methodName);
-	}
+    /**
+     * @param $node
+     *
+     * @return bool
+     */
+    protected function isNodeMethod($node)
+    {
+        return method_exists($node, $this->methodName);
+    }
 
-	/**
-	 * @param $node
-	 * @return mixed
-	 */
-	protected function callNodeMethod($node)
-	{
-		return call_user_func_array([
-			$node,
-			$this->methodName
-		], $this->arguments);
-	}
+    /**
+     * @param $node
+     *
+     * @return mixed
+     */
+    protected function callNodeMethod($node)
+    {
+        return call_user_func_array([
+            $node,
+            $this->methodName
+        ], $this->arguments);
+    }
 
-	/**
-	 * @return bool
-	 */
-	protected function isGlobalFunction()
-	{
-		return function_exists($this->methodName);
-	}
+    /**
+     * @return bool
+     */
+    protected function isGlobalFunction()
+    {
+        return function_exists($this->methodName);
+    }
 
-	/**
-	 * @param $node
-	 * @return mixed
-	 */
-	protected function callGlobalFunction($node)
-	{
-		if (is_object($node))
-		{
-			$node = $node->text();
-		}
-		$arguments = $this->arguments;
-		array_unshift($arguments, $node);
-		return call_user_func_array($this->methodName, $arguments);
-	}
+    /**
+     * @param $node
+     *
+     * @return mixed
+     */
+    protected function callGlobalFunction($node)
+    {
+        if (is_object($node)) {
+            $node = $node->text();
+        }
+        $arguments = $this->arguments;
+        array_unshift($arguments, $node);
 
-	/**
-	 * @return string
-	 */
-	public function getMethodName()
-	{
-		return $this->methodName;
-	}
+        return call_user_func_array($this->methodName, $arguments);
+    }
 
-	/**
-	 * @return array
-	 */
-	public function getArguments()
-	{
-		return $this->arguments;
-	}
+    /**
+     * @return string
+     */
+    public function getMethodName()
+    {
+        return $this->methodName;
+    }
 
+    /**
+     * @return array
+     */
+    public function getArguments()
+    {
+        return $this->arguments;
+    }
 } 

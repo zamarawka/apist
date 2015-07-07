@@ -2,7 +2,7 @@
 
 use SleepingOwl\Apist\Apist;
 use SleepingOwl\Apist\ApistConf;
-use SleepingOwl\Apist\Selectors\ApistSelector;
+use SleepingOwl\Apist\Selectors\ParsingChain;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -84,7 +84,7 @@ class Parser
 
             $parts = preg_split('/\s?\|\s?/', $value);
             $selector = array_shift($parts);
-            $value = ApistConf::filter($selector);
+            $value = ApistConf::select($selector);
             foreach ($parts as $part) {
                 $this->addCallbackToFilter($value, $part);
             }
@@ -100,11 +100,12 @@ class Parser
     }
 
     /**
-     * @param ApistSelector $filter
+     * @param ParsingChain $filter
      * @param $callback
+     *
      * @throws \InvalidArgumentException
      */
-    protected function addCallbackToFilter(ApistSelector $filter, $callback)
+    protected function addCallbackToFilter(ParsingChain $filter, $callback)
     {
         $method = strtok($callback, '(),');
         $arguments = [];

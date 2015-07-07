@@ -5,7 +5,7 @@ use SleepingOwl\Apist\BlueprintParser;
 use SleepingOwl\Apist\SuppressExceptionTrait;
 use Symfony\Component\DomCrawler\Crawler;
 
-class ApistSelector
+class ParsingChain
 {
     use SuppressExceptionTrait;
     /**
@@ -39,9 +39,9 @@ class ApistSelector
      */
     public function getValue(Crawler $rootNode, BlueprintParser $parser)
     {
-        $result = $rootNode->filter($this->selector);
+        $node = $rootNode->filter($this->selector);
 
-        return $this->applyResultCallbackChain($result, $parser);
+        return $this->resultMethodChain->call($node, $parser);
     }
 
     /**
@@ -55,20 +55,6 @@ class ApistSelector
     public function __call($name, $arguments)
     {
         return $this->addCallback($name, $arguments);
-    }
-
-    /**
-     * Apply all result callbacks
-     *
-     * @param Crawler $node
-     * @param \SleepingOwl\Apist\BlueprintParser $parser
-     *
-     * @return array|string|\Symfony\Component\DomCrawler\Crawler
-     * @throws \InvalidArgumentException
-     */
-    protected function applyResultCallbackChain(Crawler $node, BlueprintParser $parser)
-    {
-        return $this->resultMethodChain->call($node, $parser);
     }
 
     /**

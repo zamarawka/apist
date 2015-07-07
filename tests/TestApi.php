@@ -9,10 +9,10 @@ class TestApi extends Apist
 	public function index()
 	{
 		return $this->get('/', [
-			'title'     => ApistConf::filter('.page_head .title'),
-			'copyright' => ApistConf::filter('.copyright .about a')->first()->attr('href'),
-			'posts'     => ApistConf::filter('.posts .post')->each([
-                'title' => ApistConf::filter('h1.title a')->text()
+			'title'     => ApistConf::select('.page_head .title'),
+			'copyright' => ApistConf::select('.copyright .about a')->first()->attr('href'),
+			'posts'     => ApistConf::select('.posts .post')->each([
+                'title' => ApistConf::select('h1.title a')->text()
             ]),
 		]);
 	}
@@ -20,13 +20,13 @@ class TestApi extends Apist
 	public function element_not_found()
 	{
 		return $this->get('/', [
-			'title' => ApistConf::filter('.page_header')
+			'title' => ApistConf::select('.page_header')
 		]);
 	}
 
 	public function non_array_blueprint()
 	{
-		return $this->get('/', ApistConf::filter('.page_head .title'));
+		return $this->get('/', ApistConf::select('.page_head .title'));
 	}
 
 } 

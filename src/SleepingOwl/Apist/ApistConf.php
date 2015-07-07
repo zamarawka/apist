@@ -1,7 +1,7 @@
 <?php
 namespace SleepingOwl\Apist;
 
-use SleepingOwl\Apist\Selectors\ApistSelector;
+use SleepingOwl\Apist\Selectors\ParsingChain;
 use SleepingOwl\Apist\Yaml\YamlApist;
 
 class ApistConf
@@ -9,11 +9,11 @@ class ApistConf
     /**
      * Get current node
      *
-     * @return \SleepingOwl\Apist\Selectors\ApistSelector
+     * @return \SleepingOwl\Apist\Selectors\ParsingChain
      */
     public static function current()
     {
-        return static::filter('*');
+        return static::select('*');
     }
 
     /**
@@ -21,11 +21,11 @@ class ApistConf
      *
      * @param $cssSelector
      *
-     * @return \SleepingOwl\Apist\Selectors\ApistSelector
+     * @return \SleepingOwl\Apist\Selectors\ParsingChain
      */
-    public static function filter($cssSelector)
+    public static function select($cssSelector)
     {
-        return new ApistSelector($cssSelector);
+        return new ParsingChain($cssSelector);
     }
 
     /**

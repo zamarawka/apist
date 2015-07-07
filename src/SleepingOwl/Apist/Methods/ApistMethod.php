@@ -9,7 +9,7 @@ use GuzzleHttp\Psr7\Uri;
 use SleepingOwl\Apist\ApistConf;
 use SleepingOwl\Apist\BlueprintParser;
 use SleepingOwl\Apist\DomCrawler\Crawler;
-use SleepingOwl\Apist\Selectors\ApistSelector;
+use SleepingOwl\Apist\Selectors\ParsingChain;
 
 class ApistMethod
 {
@@ -22,7 +22,7 @@ class ApistMethod
      */
     protected $url;
     /**
-     * @var ApistSelector[]|ApistSelector
+     * @var ParsingChain[]|ParsingChain
      */
     protected $schemaBlueprint;
     /**
@@ -57,7 +57,6 @@ class ApistMethod
         $this->url = $url;
         $this->schemaBlueprint = $schemaBlueprint;
         $this->crawler = new Crawler();
-        $this->blueprintParser = new BlueprintParser($this);
     }
 
     /**
@@ -67,7 +66,9 @@ class ApistMethod
      *
      * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
+     *
      * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      */
     public function get(array $arguments = [])
     {
@@ -88,19 +89,9 @@ class ApistMethod
 
             return $this->errorResponse($status, $reason, $url);
         }
+        $blueprintParser = new BlueprintParser($this->crawler);
 
-        return $this->parseBlueprint($this->schemaBlueprint);
-    }
-
-    /**
-     * @param $blueprint
-     *
-     * @return array|string
-     * @throws \InvalidArgumentException
-     */
-    public function parseBlueprint($blueprint)
-    {
-        return $this->blueprintParser->parse($blueprint);
+        return $blueprintParser->parse($this->schemaBlueprint, $this->getCrawler());
     }
 
     /**

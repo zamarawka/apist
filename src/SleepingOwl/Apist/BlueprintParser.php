@@ -8,39 +8,20 @@
 
 namespace SleepingOwl\Apist;
 
-
-use SleepingOwl\Apist\Methods\ApistMethod;
-use SleepingOwl\Apist\Selectors\ApistSelector;
+use SleepingOwl\Apist\Selectors\ParsingChain;
 
 class BlueprintParser
 {
-    /**
-     * @var ApistMethod
-     */
-    protected $method;
-
-    /**
-     * BlueprintParser constructor.
-     *
-     * @param \SleepingOwl\Apist\Methods\ApistMethod $method
-     */
-    public function __construct(ApistMethod $method)
-    {
-        $this->method = $method;
-    }
-
     /**
      * @param $blueprint
      * @param null $node
      *
      * @return array|string
      * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      */
     public function parse($blueprint, $node = null)
     {
-        if ($blueprint === null) {
-            return $this->content;
-        }
         if (!is_array($blueprint)) {
             $blueprint = $this->parseBlueprintValue($blueprint, $node);
         }
@@ -63,9 +44,7 @@ class BlueprintParser
      */
     protected function parseBlueprintValue($value, $node)
     {
-        if ($value instanceof ApistSelector) {
-            $node = ($node === null) ? $this->method->getCrawler() : $node;
-
+        if ($value instanceof ParsingChain) {
             return $value->getValue($node, $this);
         }
 
