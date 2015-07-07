@@ -102,9 +102,6 @@ class ApistMethod
      */
     protected function makeRequest(array $arguments = [])
     {
-        $defaults = $this->getDefaultOptions();
-        $arguments = array_merge($defaults, $arguments);
-
         $request = new Request($this->getMethod(), $this->url);
         $response = $this->guzzle->send($request, $arguments);
         $this->setResponse($response);
@@ -170,16 +167,6 @@ class ApistMethod
         $this->crawler->addContent($content);
 
         return $this;
-    }
-
-    /**
-     * @return array
-     */
-    protected function getDefaultOptions()
-    {
-        return [
-            'cookies' => true
-        ];
     }
 
     /**
