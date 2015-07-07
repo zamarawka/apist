@@ -8,7 +8,7 @@
 
 namespace SleepingOwl\Apist\Selectors;
 
-use SleepingOwl\Apist\BlueprintParser;
+use SleepingOwl\Apist\Blueprint;
 use SleepingOwl\Apist\SuppressExceptionTrait;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -26,12 +26,12 @@ class ResultCallbackChain extends \ArrayObject
     /**
      * @param \Symfony\Component\DomCrawler\Crawler $node
      *
-     * @param \SleepingOwl\Apist\BlueprintParser $parser
+     * @param \SleepingOwl\Apist\Blueprint $parser
      *
      * @return array|null|string|\Symfony\Component\DomCrawler\Crawler
      * @throws \InvalidArgumentException
      */
-    public function call(Crawler $node, BlueprintParser $parser)
+    public function call(Crawler $node, Blueprint $parser)
     {
         if ($this->count() === 0) {
             $this->addCallback('text');

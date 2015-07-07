@@ -10,7 +10,7 @@ namespace SleepingOwl\Apist;
 
 use SleepingOwl\Apist\Selectors\ParsingChain;
 
-class BlueprintParser
+class Blueprint
 {
     /**
      * @param $blueprint

@@ -1,7 +1,7 @@
 <?php namespace SleepingOwl\Apist\Selectors;
 
 use SleepingOwl\Apist\ApistConf;
-use SleepingOwl\Apist\BlueprintParser;
+use SleepingOwl\Apist\Blueprint;
 use Symfony\Component\DomCrawler\Crawler;
 
 class ResultCallback
@@ -28,17 +28,31 @@ class ResultCallback
     /**
      * Apply result callback to the $node, provided by $method
      *
-     * @param Crawler $node
-     * @param \SleepingOwl\Apist\BlueprintParser $parser
+     * @param Crawler|array|bool $node
+     * @param \SleepingOwl\Apist\Blueprint $parser
      *
      * @return array|string
      * @throws \InvalidArgumentException
      */
-    public function apply(Crawler $node, BlueprintParser $parser)
+    public function apply($node, Blueprint $parser)
     {
-        /*if ($node->count() > 1) {
+        if (is_array($node)) {
             return $this->applyToArray($node, $parser);
-        }*/
+        } else {
+            return $this->innerApply($node, $parser);
+        }
+
+    }
+
+    /**
+     * @param $node
+     * @param \SleepingOwl\Apist\Blueprint $parser
+     *
+     * @return mixed
+     * @throws \InvalidArgumentException
+     */
+    protected function innerApply($node, Blueprint $parser)
+    {
         if ($this->methodName === 'else') {
             if (is_bool($node)) {
                 $node = !$node;
@@ -68,19 +82,20 @@ class ResultCallback
 
     /**
      * @param $array
-     * @param \SleepingOwl\Apist\BlueprintParser $parser
+     * @param \SleepingOwl\Apist\Blueprint $parser
      *
      * @return array
+     * @throws \InvalidArgumentException
      */
-    /*protected function applyToArray($array, BlueprintParser $parser)
+    protected function applyToArray($array, Blueprint $parser)
     {
         $result = [];
         foreach ($array as $node) {
-            $result[] = $this->apply($node, $parser);
+            $result[] = $this->innerApply($node, $parser);
         }
 
         return $result;
-    }*/
+    }
 
     /**
      * @return bool

@@ -1,7 +1,7 @@
 <?php namespace SleepingOwl\Apist\Selectors;
 
 use InvalidArgumentException;
-use SleepingOwl\Apist\BlueprintParser;
+use SleepingOwl\Apist\Blueprint;
 use SleepingOwl\Apist\SuppressExceptionTrait;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -31,13 +31,13 @@ class ParsingChain
      *
      * @param Crawler $rootNode
      *
-     * @param \SleepingOwl\Apist\BlueprintParser $parser
+     * @param \SleepingOwl\Apist\Blueprint $parser
      *
      * @return array|null|string|\Symfony\Component\DomCrawler\Crawler
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      */
-    public function getValue(Crawler $rootNode, BlueprintParser $parser)
+    public function getValue(Crawler $rootNode, Blueprint $parser)
     {
         $node = $rootNode->filter($this->selector);
 

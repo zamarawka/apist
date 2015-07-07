@@ -6,7 +6,7 @@
  * Date: 06.07.15
  * Time: 18:08
  */
-class DummyBlueprintParser extends \SleepingOwl\Apist\BlueprintParser
+class DummyBlueprintParser extends \SleepingOwl\Apist\Blueprint
 {
     public function __construct()
     {

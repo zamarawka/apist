@@ -1,7 +1,7 @@
 <?php
 namespace SleepingOwl\Apist\Selectors;
 
-use SleepingOwl\Apist\BlueprintParser;
+use SleepingOwl\Apist\Blueprint;
 use SleepingOwl\Apist\DomCrawler\Crawler;
 
 /**
@@ -16,15 +16,15 @@ class ApistFilter
      */
     protected $node;
     /**
-     * @var BlueprintParser
+     * @var Blueprint
      */
     protected $parser;
 
     /**
      * @param mixed $node
-     * @param \SleepingOwl\Apist\BlueprintParser $parser
+     * @param \SleepingOwl\Apist\Blueprint $parser
      */
-    public function __construct($node, BlueprintParser $parser)
+    public function __construct($node, Blueprint $parser)
     {
         $this->node = $node;
         $this->parser = $parser;

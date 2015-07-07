@@ -7,7 +7,7 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use SleepingOwl\Apist\ApistConf;
-use SleepingOwl\Apist\BlueprintParser;
+use SleepingOwl\Apist\Blueprint;
 use SleepingOwl\Apist\DomCrawler\Crawler;
 use SleepingOwl\Apist\Selectors\ParsingChain;
 
@@ -42,7 +42,7 @@ class ApistMethod
      */
     protected $response;
     /**
-     * @var \SleepingOwl\Apist\BlueprintParser
+     * @var \SleepingOwl\Apist\Blueprint
      */
     protected $blueprintParser;
 
@@ -89,7 +89,7 @@ class ApistMethod
 
             return $this->errorResponse($status, $reason, $url);
         }
-        $blueprintParser = new BlueprintParser($this->crawler);
+        $blueprintParser = new Blueprint($this->crawler);
 
         return $blueprintParser->parse($this->schemaBlueprint, $this->getCrawler());
     }
@@ -199,7 +199,7 @@ class ApistMethod
     }
 
     /**
-     * @return BlueprintParser
+     * @return Blueprint
      */
     public function getBlueprintParser()
     {
