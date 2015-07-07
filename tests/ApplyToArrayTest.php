@@ -14,7 +14,7 @@ class ApplyToArrayTest extends PHPUnit_Framework_TestCase
         $confParser->parse([
             'index' => [
                 'blueprint' => [
-                    'name' => 'li | text'
+                    'name' => 'li'
                 ]
             ]
         ]);
