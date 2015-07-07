@@ -1,26 +1,28 @@
 <?php
 namespace SleepingOwl\Apist\Methods;
 
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
-use SleepingOwl\Apist\Apist;
+use SleepingOwl\Apist\ApistConf;
+use SleepingOwl\Apist\Blueprint;
 use SleepingOwl\Apist\DomCrawler\Crawler;
-use SleepingOwl\Apist\Selectors\ApistSelector;
+use SleepingOwl\Apist\Selectors\ParsingChain;
 
 class ApistMethod
 {
     /**
-     * @var Apist
+     * @var ApistConf
      */
-    protected $resource;
+    protected $guzzle;
     /**
      * @var Uri
      */
     protected $url;
     /**
-     * @var ApistSelector[]|ApistSelector
+     * @var ParsingChain[]|ParsingChain
      */
     protected $schemaBlueprint;
     /**
@@ -39,15 +41,19 @@ class ApistMethod
      * @var \GuzzleHttp\Psr7\Response
      */
     protected $response;
+    /**
+     * @var \SleepingOwl\Apist\Blueprint
+     */
+    protected $blueprintParser;
 
     /**
-     * @param $resource
+     * @param ClientInterface $guzzle
      * @param Uri $url
      * @param $schemaBlueprint
      */
-    public function __construct($resource, Uri $url, $schemaBlueprint)
+    public function __construct(ClientInterface $guzzle, Uri $url, $schemaBlueprint)
     {
-        $this->resource = $resource;
+        $this->guzzle = $guzzle;
         $this->url = $url;
         $this->schemaBlueprint = $schemaBlueprint;
         $this->crawler = new Crawler();
@@ -60,6 +66,9 @@ class ApistMethod
      *
      * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
+     *
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      */
     public function get(array $arguments = [])
     {
@@ -80,8 +89,9 @@ class ApistMethod
 
             return $this->errorResponse($status, $reason, $url);
         }
+        $blueprintParser = new Blueprint($this->crawler);
 
-        return $this->parseBlueprint($this->schemaBlueprint);
+        return $blueprintParser->parse($this->schemaBlueprint, $this->getCrawler());
     }
 
     /**
@@ -94,50 +104,11 @@ class ApistMethod
     {
         $defaults = $this->getDefaultOptions();
         $arguments = array_merge($defaults, $arguments);
-        $client = $this->resource->getGuzzle();
 
         $request = new Request($this->getMethod(), $this->url);
-        $response = $client->send($request, $arguments);
+        $response = $this->guzzle->send($request, $arguments);
         $this->setResponse($response);
         $this->setContent((string) $response->getBody());
-    }
-
-    /**
-     * @param $blueprint
-     * @param null $node
-     *
-     * @return array|string
-     */
-    public function parseBlueprint($blueprint, $node = null)
-    {
-        if ($blueprint === null) {
-            return $this->content;
-        }
-        if (!is_array($blueprint)) {
-            $blueprint = $this->parseBlueprintValue($blueprint, $node);
-        }
-        else {
-            array_walk_recursive($blueprint, function (&$value) use ($node) {
-                $value = $this->parseBlueprintValue($value, $node);
-            });
-        }
-
-        return $blueprint;
-    }
-
-    /**
-     * @param $value
-     * @param $node
-     *
-     * @return array|string
-     */
-    protected function parseBlueprintValue($value, $node)
-    {
-        if ($value instanceof ApistSelector) {
-            return $value->getValue($this, $node);
-        }
-
-        return $value;
     }
 
     /**
@@ -212,14 +183,6 @@ class ApistMethod
     }
 
     /**
-     * @return Apist
-     */
-    public function getResource()
-    {
-        return $this->resource;
-    }
-
-    /**
      * @return \GuzzleHttp\Psr7\Response
      */
     public function getResponse()
@@ -233,6 +196,14 @@ class ApistMethod
     public function setResponse($response)
     {
         $this->response = $response;
+    }
+
+    /**
+     * @return Blueprint
+     */
+    public function getBlueprintParser()
+    {
+        return $this->blueprintParser;
     }
 
 }

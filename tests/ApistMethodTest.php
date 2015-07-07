@@ -1,6 +1,6 @@
 <?php
 
-use SleepingOwl\Apist\Apist;
+use SleepingOwl\Apist\ApistConf;
 
 class ApistMethodTest extends PHPUnit_Framework_TestCase
 {
@@ -30,6 +30,8 @@ class ApistMethodTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals('Моя лента', $result['title']);
 		$this->assertEquals('http://tmtm.ru/', $result['copyright']);
 		$this->assertCount(10, $result['posts']);
+        $this->assertEquals('Проверьте своего хостера на'.
+			' уязвимость Shellshock (часть 2)', $result['posts'][0]['title']);
 	}
 
 	/** @test */

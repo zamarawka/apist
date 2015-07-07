@@ -1,8 +1,8 @@
-<?php namespace SleepingOwl\Apist\Selectors;
+<?php
+namespace SleepingOwl\Apist\Selectors;
 
-use SleepingOwl\Apist\Apist;
+use SleepingOwl\Apist\Blueprint;
 use SleepingOwl\Apist\DomCrawler\Crawler;
-use SleepingOwl\Apist\Methods\ApistMethod;
 
 /**
  * Class ApistFilter
@@ -11,195 +11,224 @@ use SleepingOwl\Apist\Methods\ApistMethod;
  */
 class ApistFilter
 {
-	/**
-	 * @var Crawler
-	 */
-	protected $node;
-	/**
-	 * @var Apist
-	 */
-	protected $resource;
-	/**
-	 * @var ApistMethod
-	 */
-	protected $method;
+    /**
+     * @var Crawler
+     */
+    protected $node;
+    /**
+     * @var Blueprint
+     */
+    protected $parser;
 
-	/**
-	 * @param mixed $node
-	 * @param ApistMethod $method
-	 */
-	function __construct($node, ApistMethod $method)
-	{
-		$this->node = $node;
-		$this->method = $method;
-		$this->resource = $method->getResource();
-	}
+    /**
+     * @param mixed $node
+     * @param \SleepingOwl\Apist\Blueprint $parser
+     */
+    public function __construct($node, Blueprint $parser)
+    {
+        $this->node = $node;
+        $this->parser = $parser;
+    }
 
-	/**
-	 * @return ApistFilter
+    /**
+     * @return ApistFilter
      * @throws \InvalidArgumentException
-	 */
-	public function text()
-	{
-		$this->guardCrawler();
-		return $this->node->text();
-	}
+     */
+    public function text()
+    {
+        $this->guardCrawler();
 
-	/**
-	 * @return ApistFilter
+        return $this->node->text();
+    }
+
+    /**
+     * @return ApistFilter
      * @throws \InvalidArgumentException
-	 */
-	public function html()
-	{
-		$this->guardCrawler();
-		return $this->node->html();
-	}
+     */
+    public function html()
+    {
+        $this->guardCrawler();
 
-	/**
-	 * @param $selector
-	 * @return ApistFilter
-	 */
-	public function filter($selector)
-	{
-		$this->guardCrawler();
-		return $this->node->filter($selector);
-	}
+        return $this->node->html();
+    }
 
-	/**
-	 * @param $selector
-	 * @return ApistFilter
-	 */
-	public function filterNodes($selector)
-	{
-		$this->guardCrawler();
-		$rootNode = $this->method->getCrawler();
-		$crawler = new Crawler;
-		$rootNode->filter($selector)->each(function (Crawler $filteredNode) use ($crawler)
-		{
-			$filteredNode = $filteredNode->getNode(0);
-			foreach ($this->node as $node)
-			{
-				if ($filteredNode === $node)
-				{
-					$crawler->add($node);
-					break;
-				}
-			}
-		});
-		return $crawler;
-	}
-
-	/**
-	 * @param $selector
-	 * @return ApistFilter
-	 */
-	public function find($selector)
-	{
-		$this->guardCrawler();
-		return $this->node->filter($selector);
-	}
-
-	/**
-	 * @return ApistFilter
+    /**
+     * @param $selector
+     *
+     * @return ApistFilter
      * @throws \InvalidArgumentException
-	 */
-	public function children()
-	{
-		$this->guardCrawler();
-		return $this->node->children();
-	}
+     */
+    public function filter($selector)
+    {
+        $this->guardCrawler();
 
-	/**
-	 * @return ApistFilter
-	 */
-	public function prev()
-	{
-		$this->guardCrawler();
-		return $this->prevAll()->first();
-	}
+        return $this->node->filter($selector);
+    }
 
-	/**
-	 * @return ApistFilter
+    /**
+     * @param $selector
+     *
+     * @return ApistFilter
      * @throws \InvalidArgumentException
-	 */
-	public function prevAll()
-	{
-		$this->guardCrawler();
-		return $this->node->previousAll();
-	}
+     */
+    //TODO: implement
+    public function filterNodes($selector)
+    {
+        throw new \Exception('Method '.__METHOD__.' is not yet implemented');
+    }
+    /*public function filterNodes($selector)
+    {
+        $this->guardCrawler();
+        $rootNode = $this->method->getCrawler();
+        $crawler = new Crawler;
+        $rootNode->filter($selector)
+                 ->each(function (Crawler $filteredNode) use ($crawler) {
+                     $filteredNode = $filteredNode->getNode(0);
+                     foreach ($this->node as $node) {
+                         if ($filteredNode === $node) {
+                             $crawler->add($node);
+                             break;
+                         }
+                     }
+                 });
 
-	/**
-	 * @param $selector
-	 * @return ApistFilter
-	 */
-	public function prevUntil($selector)
-	{
-		return $this->nodeUntil($selector, 'prev');
-	}
+        return $crawler;
+    }*/
 
-	/**
-	 * @return ApistFilter
-	 */
-	public function next()
-	{
-		$this->guardCrawler();
-		return $this->nextAll()->first();
-	}
-
-	/**
-	 * @return ApistFilter
+    /**
+     * @param $selector
+     *
+     * @return ApistFilter
      * @throws \InvalidArgumentException
-	 */
-	public function nextAll()
-	{
-		$this->guardCrawler();
-		return $this->node->nextAll();
-	}
+     */
+    public function find($selector)
+    {
+        $this->guardCrawler();
 
-	/**
-	 * @param $selector
-	 * @return ApistFilter
-	 */
-	public function nextUntil($selector)
-	{
-		return $this->nodeUntil($selector, 'next');
-	}
+        return $this->node->filter($selector);
+    }
 
-	/**
-	 * @param $selector
-	 * @param $direction
-	 * @return Crawler
+    /**
+     * @return ApistFilter
      * @throws \InvalidArgumentException
-	 */
-	public function nodeUntil($selector, $direction)
-	{
-		$this->guardCrawler();
-		$crawler = new Crawler;
-		$filter = new static($this->node, $this->method);
-		while (1)
-		{
-			$node = $filter->$direction();
-			if (null === $node)
-			{
-				break;
-			}
-			$filter->node = $node;
-			if ($filter->is($selector)) break;
-			$crawler->add($node->getNode(0));
-		}
-		return $crawler;
-	}
+     */
+    public function children()
+    {
+        $this->guardCrawler();
+
+        return $this->node->children();
+    }
+
+    /**
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function prev()
+    {
+        $this->guardCrawler();
+
+        return $this->prevAll()->first();
+    }
+
+    /**
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function prevAll()
+    {
+        $this->guardCrawler();
+
+        return $this->node->previousAll();
+    }
+
+    /**
+     * @param $selector
+     *
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function prevUntil($selector)
+    {
+        return $this->nodeUntil($selector, 'prev');
+    }
+
+    /**
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function next()
+    {
+        $this->guardCrawler();
+
+        return $this->nextAll()->first();
+    }
+
+    /**
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function nextAll()
+    {
+        $this->guardCrawler();
+
+        return $this->node->nextAll();
+    }
+
+    /**
+     * @param $selector
+     *
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function nextUntil($selector)
+    {
+        return $this->nodeUntil($selector, 'next');
+    }
+
+    /**
+     * @param $selector
+     * @param $direction
+     *
+     * @return Crawler
+     * @throws \InvalidArgumentException
+     */
+    public function nodeUntil($selector, $direction)
+    {
+        $this->guardCrawler();
+        $crawler = new Crawler;
+        $filter = new static($this->node, $this->parser);
+        while (1) {
+            $node = $filter->$direction();
+            if (null === $node) {
+                break;
+            }
+            $filter->node = $node;
+            if ($filter->is($selector)) {
+                break;
+            }
+            $crawler->add($node->getNode(0));
+        }
+
+        return $crawler;
+    }
 
     /**
      * @param $selector
      *
      * @return \SleepingOwl\Apist\Selectors\ApistFilter
+     * @throws \InvalidArgumentException
      */
-	public function is($selector)
-	{
-		$this->guardCrawler();
-		return count($this->filterNodes($selector)) > 0;
-	}
+    public function is($selector)
+    {
+        throw new \Exception('Method '.__METHOD__.' is not yet implemented');
+    }
+    //TODO: implement
+    /*public function is($selector)
+    {
+        $this->guardCrawler();
+
+        return count($this->filterNodes($selector)) > 0;
+    }*/
 
     /**
      * @param $selector
@@ -207,112 +236,136 @@ class ApistFilter
      * @return \SleepingOwl\Apist\Selectors\ApistFilter
      * @throws \InvalidArgumentException
      */
-	public function closest($selector)
-	{
-		$this->guardCrawler();
-		$this->node = $this->node->parents();
-		return $this->filterNodes($selector)->last();
-	}
+    //TODO: implement
+    public function closest($selector)
+    {
+        throw new \Exception('Method '.__METHOD__.' is not yet implemented');
+    }
+    /*public function closest($selector)
+    {
+        $this->guardCrawler();
+        $this->node = $this->node->parents();
 
-	/**
-	 * @param $attribute
-	 * @return ApistFilter
+        return $this->filterNodes($selector)->last();
+    }*/
+
+    /**
+     * @param $attribute
+     *
+     * @return ApistFilter
      * @throws \InvalidArgumentException
-	 */
-	public function attr($attribute)
-	{
-		$this->guardCrawler();
-		return $this->node->attr($attribute);
-	}
+     */
+    public function attr($attribute)
+    {
+        $this->guardCrawler();
 
-	/**
-	 * @param $attribute
-	 * @return ApistFilter
+        return $this->node->attr($attribute);
+    }
+
+    /**
+     * @param $attribute
+     *
+     * @return ApistFilter
      * @throws \InvalidArgumentException
-	 */
-	public function hasAttr($attribute)
-	{
-		$this->guardCrawler();
-		return $this->node->attr($attribute) !== null;
-	}
+     */
+    public function hasAttr($attribute)
+    {
+        $this->guardCrawler();
 
-	/**
-	 * @param $position
-	 * @return ApistFilter
-	 */
-	public function eq($position)
-	{
-		$this->guardCrawler();
-		return $this->node->eq($position);
-	}
+        return $this->node->attr($attribute) !== null;
+    }
 
-	/**
-	 * @return ApistFilter
-	 */
-	public function first()
-	{
-		$this->guardCrawler();
-		return $this->node->first();
-	}
+    /**
+     * @param $position
+     *
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function eq($position)
+    {
+        $this->guardCrawler();
 
-	/**
-	 * @return ApistFilter
-	 */
-	public function last()
-	{
-		$this->guardCrawler();
-		return $this->node->last();
-	}
+        return $this->node->eq($position);
+    }
 
-	/**
-	 * @return ApistFilter
-	 */
-	public function element()
-	{
-		return $this->node;
-	}
+    /**
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function first()
+    {
+        $this->guardCrawler();
 
-	/**
-	 * @param $callback
-	 * @return ApistFilter
-	 */
-	public function call($callback)
-	{
-		return $callback($this->node);
-	}
+        return $this->node->first();
+    }
+
+    /**
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function last()
+    {
+        $this->guardCrawler();
+
+        return $this->node->last();
+    }
+
+    /**
+     * @return ApistFilter
+     */
+    public function element()
+    {
+        return $this->node;
+    }
+
+    /**
+     * @param $callback
+     *
+     * @return ApistFilter
+     */
+    public function call($callback)
+    {
+        return $callback($this->node);
+    }
 
     /**
      * @param string $mask
      *
      * @return \SleepingOwl\Apist\Selectors\ApistFilter
+     * @throws \InvalidArgumentException
      */
-	public function trim($mask = " \t\n\r\0\x0B")
-	{
-		$this->guardText();
-		return trim($this->node, $mask);
-	}
+    public function trim($mask = " \t\n\r\0\x0B")
+    {
+        $this->guardText();
+
+        return trim($this->node, $mask);
+    }
 
     /**
      * @param string $mask
      *
      * @return \SleepingOwl\Apist\Selectors\ApistFilter
+     * @throws \InvalidArgumentException
      */
-	public function ltrim($mask = " \t\n\r\0\x0B")
-	{
-		$this->guardText();
-		return ltrim($this->node, $mask);
-	}
+    public function ltrim($mask = " \t\n\r\0\x0B")
+    {
+        $this->guardText();
+
+        return ltrim($this->node, $mask);
+    }
 
     /**
      * @param string $mask
      *
      * @return \SleepingOwl\Apist\Selectors\ApistFilter
+     * @throws \InvalidArgumentException
      */
-	public function rtrim($mask = " \t\n\r\0\x0B")
-	{
-		$this->guardText();
-		return rtrim($this->node, $mask);
-	}
+    public function rtrim($mask = " \t\n\r\0\x0B")
+    {
+        $this->guardText();
+
+        return rtrim($this->node, $mask);
+    }
 
     /**
      * @param $search
@@ -320,105 +373,113 @@ class ApistFilter
      * @param null $count
      *
      * @return \SleepingOwl\Apist\Selectors\ApistFilter
+     * @throws \InvalidArgumentException
      */
-	public function str_replace($search, $replace, $count = null)
-	{
-		$this->guardText();
-		return str_replace($search, $replace, $this->node, $count);
-	}
+    public function str_replace($search, $replace, $count = null)
+    {
+        $this->guardText();
 
-	/**
-	 * @return ApistFilter
-	 */
-	public function intval()
-	{
-		$this->guardText();
-		return (int)$this->node;
-	}
+        return str_replace($search, $replace, $this->node, $count);
+    }
 
-	/**
-	 * @return ApistFilter
-	 */
-	public function floatval()
-	{
-		$this->guardText();
-		return (float)$this->node;
-	}
+    /**
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function intval()
+    {
+        $this->guardText();
 
-	/**
-	 * @return ApistFilter
-	 */
-	public function exists()
-	{
-		return count($this->node) > 0;
-	}
+        return (int) $this->node;
+    }
 
-	/**
-	 * @param $callback
-	 * @return ApistFilter
-	 */
-	public function check($callback)
-	{
-		return $this->call($callback);
-	}
+    /**
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function floatval()
+    {
+        $this->guardText();
 
-	/**
-	 * @param $blueprint
-	 * @return ApistFilter
-	 */
-	public function then($blueprint)
-	{
-		if ($this->node === true)
-		{
-			return $this->method->parseBlueprint($blueprint);
-		}
-		return $this->node;
-	}
+        return (float) $this->node;
+    }
 
-	/**
-	 * @param $blueprint
-	 * @return ApistFilter
-	 */
-	public function each($blueprint = null)
-	{
-		$callback = $blueprint;
-		if ($callback === null)
-		{
-			$callback = function ($node)
-			{
-				return $node;
-			};
-		}
-		if ( ! is_callable($callback))
-		{
-			$callback = function ($node) use ($blueprint)
-			{
-				return $this->method->parseBlueprint($blueprint, $node);
-			};
-		}
-		return $this->node->each($callback);
-	}
+    /**
+     * @return ApistFilter
+     */
+    public function exists()
+    {
+        return count($this->node) > 0;
+    }
 
-	/**
-	 * Guard string method to be called with Crawler object
-	 */
-	protected function guardText()
-	{
-		if (is_object($this->node))
-		{
-			$this->node = $this->node->text();
-		}
-	}
+    /**
+     * @param $callback
+     *
+     * @return ApistFilter
+     */
+    public function check($callback)
+    {
+        return $this->call($callback);
+    }
 
-	/**
-	 * Guard method to be called with Crawler object
-	 */
-	protected function guardCrawler()
-	{
-		if ( ! $this->node instanceof Crawler)
-		{
-			throw new \InvalidArgumentException('Current node isnt instance of Crawler.');
-		}
-	}
+    /**
+     * @param $blueprint
+     *
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function then($blueprint)
+    {
+        if ($this->node === true) {
+            return $this->parser->parse($blueprint);
+        }
+
+        return $this->node;
+    }
+
+    /**
+     * @param $blueprint
+     *
+     * @return ApistFilter
+     * @throws \InvalidArgumentException
+     */
+    public function each($blueprint = null)
+    {
+        $callback = $blueprint;
+        if ($callback === null) {
+            $callback = function ($node) {
+                return $node;
+            };
+        }
+        if (!is_callable($callback)) {
+            $callback = function ($node) use ($blueprint) {
+                return $this->parser->parse($blueprint, $node);
+            };
+        }
+
+        return $this->node->each($callback);
+    }
+
+    /**
+     * Guard string method to be called with Crawler object
+     * @throws \InvalidArgumentException
+     */
+    protected function guardText()
+    {
+        if (is_object($this->node)) {
+            $this->node = $this->node->text();
+        }
+    }
+
+    /**
+     * Guard method to be called with Crawler object
+     * @throws \InvalidArgumentException
+     */
+    protected function guardCrawler()
+    {
+        if (!$this->node instanceof Crawler) {
+            throw new \InvalidArgumentException('Current node isnt instance of Crawler.');
+        }
+    }
 
 }

@@ -1,7 +1,7 @@
 <?php namespace SleepingOwl\Apist\Yaml;
 
+use GuzzleHttp\ClientInterface;
 use SleepingOwl\Apist\Apist;
-use Symfony\Component\Yaml\Exception\ParseException;
 
 class YamlApist extends Apist
 {
@@ -11,23 +11,27 @@ class YamlApist extends Apist
 	protected $parser;
 
     /**
+     * @param \GuzzleHttp\ClientInterface $httpClient
+     * @param string $baseUrl
      * @param null $file
-     * @param array $options
-     * @throws ParseException
+     *
+     * @throws \Symfony\Component\Yaml\Exception\ParseException
+     * @throws \InvalidArgumentException
      */
-	public function __construct($file = null, $options = [])
+	public function __construct(ClientInterface $httpClient, $baseUrl = '', $file = null)
 	{
 		if ($file !== null)
 		{
 			$this->loadFromYml($file);
 		}
-		parent::__construct($options);
+		parent::__construct($httpClient, $baseUrl);
 	}
 
 	/**
 	 * Load method data from yaml file
 	 * @param $file
-     * @throws ParseException
+     * @throws \Symfony\Component\Yaml\Exception\ParseException
+     * @throws \InvalidArgumentException
 	 */
 	protected function loadFromYml($file)
 	{
@@ -40,6 +44,7 @@ class YamlApist extends Apist
 	 * @param $arguments
 	 * @return array
      * @throws \InvalidArgumentException
+     * @throws \GuzzleHttp\Exception\GuzzleException
 	 */
 	public function __call($name, $arguments)
 	{
