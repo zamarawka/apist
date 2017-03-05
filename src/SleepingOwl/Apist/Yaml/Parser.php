@@ -44,7 +44,7 @@ class Parser
      */
     public function load(Apist $resource)
     {
-        $data = Yaml::parse($this->file);
+        $data = Yaml::parse(file_get_contents($this->file));
         if (isset($data['baseUrl'])) {
             $resource->setBaseUrl($data['baseUrl']);
             unset($data['baseUrl']);
@@ -88,4 +88,4 @@ class Parser
     {
         return $this->blueprintParser->getMethod($name);
     }
-} 
+}
