@@ -12,7 +12,7 @@ class BuggyResultCallback extends \SleepingOwl\Apist\Selectors\ResultCallback
     {
     }
 
-    public function apply(\Symfony\Component\DomCrawler\Crawler $node, \SleepingOwl\Apist\Blueprint $parser)
+    public function apply($node, \SleepingOwl\Apist\Blueprint $parser)
     {
         throw new \Exception();
     }
